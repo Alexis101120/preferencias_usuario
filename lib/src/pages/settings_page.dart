@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:preferencias_usuario/src/shared_prefs/preferencias_usuario.dart';
 import 'package:preferencias_usuario/src/widgets/menu_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,35 +11,35 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _colorSecundario = false;
-  int? _genero = 1;
-  String _nombre = 'Alexis';
+   late bool _colorSecundario;
+   late int _genero;
+   String _nombre = 'Alexis';
 
+  PreferenciasUsuario prefs = new PreferenciasUsuario();
   late TextEditingController _textEditingController;
+  
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    cargarPref();
-    _textEditingController = new TextEditingController(text: _nombre);
+    _genero = prefs.genero;
+    _colorSecundario = prefs.colorSecundario;
+    prefs.ultimaPagina = SettingsPage.routName;
+    _textEditingController = new TextEditingController(text: prefs.nombreUsuario);
   }
 
-  cargarPref() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _genero = prefs.getInt('genero');
+
+
+  _getSelectedRadio(int? valor) {
+    prefs.genero = valor!;
+    _genero = valor;
     setState(() {});
   }
 
-  _getSelectedRadio(int? valor) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('genero', valor ?? 1);
-    _genero = valor ?? 1;
-    print(valor);
-    setState(() {});
-  }
 
   _getSeletedColor(bool valor) {
+    prefs.colorSecundario = valor;
     _colorSecundario = valor;
     setState(() {});
   }
@@ -48,6 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('Ajustes'),
+          backgroundColor: (prefs.colorSecundario) ? Colors.teal : Colors.blue,
         ),
         drawer: MenuWidget(),
         body: ListView(
@@ -82,7 +84,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   labelText: 'Nombre',
                   helperText: 'Ingrese nombre',
                 ),
-                onChanged: (value) {},
+                onChanged: (value) {
+                  prefs.nombreUsuario = value;
+                },
                 controller: _textEditingController,
               ),
             )
